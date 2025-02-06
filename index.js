@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
+app.use(express.json());
 
 const db = require('./db');
 const employeeController = require('./controllers/employee.controller');

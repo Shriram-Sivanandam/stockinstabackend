@@ -25,19 +25,23 @@ router.get('/list', (req, res) => {
 });
 
 router.post('/registerUser', (req, res) => {
-	console.log('insidee register user');
-	const sql = 'INSERT INTO users (username, password) VALUES (?,?)';
+	console.log('insidee register user', req.body);
+	const sql = 'INSERT INTO `users` (username, password) VALUES (?)';
 	bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
 		if (err) {
-			res.status(500).send('error in hashing password');
+			return res.status(500).send('error in hashing password');
 		}
-		const values = [req.body.username, hash];
+		const values = [req.body.email, hash];
 		db.query(sql, [values], (err, result) => {
+			console.log('inside query', err, result);
 			if (err) {
-				res.status(500).send('error in registering user');
+				return res.status(500).send('error in inserting user');
 			}
+			db.end();
+			console.log('hello there');
 			return res.status(200).send('Success');
 		});
+		return res.status(200).send('Success');
 	});
 });
 
