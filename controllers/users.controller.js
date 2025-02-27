@@ -6,7 +6,13 @@ const cookieParser = require('cookie-parser');
 
 const router = express.Router();
 
-router.use(cors());
+router.use(
+	cors({
+		origin: 'http://localhost:3000',
+		methods: ['GET', 'POST'],
+		credentials: true,
+	})
+);
 router.use(express.json());
 router.use(cookieParser());
 
@@ -32,17 +38,41 @@ router.post('/registerUser', (req, res) => {
 			return res.status(500).send('error in hashing password');
 		}
 		const values = [req.body.email, hash];
-		db.query(sql, [values], (err, result) => {
-			console.log('inside query', err, result);
-			if (err) {
+		db.query(sql, [values])
+			.then((data) => {
+				return res.status(200).send('Success');
+			})
+			.catch((err) => {
 				return res.status(500).send('error in inserting user');
-			}
-			db.end();
-			console.log('hello there');
-			return res.status(200).send('Success');
-		});
-		return res.status(200).send('Success');
+			});
 	});
+});
+
+router.post('/login', (req, res) => {
+	const sql = 'SELECT * FROM users WHERE username = ?';
+	console.log('hello', req.body.email, req.body.password);
+
+	db.query(sql, [req.body.email])
+		.then((result) => {
+			console.log('hello2', result[0][0].password);
+			if (result.length > 0) {
+				bcrypt.compare(req.body.password, result[0][0].password, (berr, isMatch) => {
+					if (berr) return res.status(500).send('error in comparing password');
+					if (isMatch) {
+						const token = jwt.sign({ email: req.body.email }, 'secret', { expiresIn: '1d' });
+						res.cookie('token', token, { httpOnly: true });
+						return res.status(200).send('login successful');
+					} else {
+						return res.status(401).send('Incorrect password');
+					}
+				});
+			} else {
+				return res.status(404).send('user not found');
+			}
+		})
+		.catch((err) => {
+			return res.status(500).send('error in fetching user');
+		});
 });
 
 module.exports = router;
