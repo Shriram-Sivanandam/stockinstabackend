@@ -14,12 +14,15 @@ app.use(express.json());
 const db = require('./db');
 const employeeController = require('./controllers/employee.controller');
 const usersController = require('./controllers/users.controller');
+const exploreController = require('./controllers/explore.controller');
 
 const PORT = 3000;
 
 app.use('/employees', employeeController);
 
 app.use('/users', usersController);
+
+app.use('/explore', exploreController);
 
 db.query('SELECT 1')
 	.then((data) => {

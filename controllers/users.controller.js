@@ -21,16 +21,6 @@ const saltRounds = 10;
 
 const db = require('../db');
 
-router.get('/list', (req, res) => {
-	db.query('SELECT * FROM users')
-		.then((data) => {
-			res.send(data[0]);
-		})
-		.catch((err) => {
-			res.status(500).send('error');
-		});
-});
-
 router.post('/registerUser', (req, res) => {
 	const sql = 'INSERT INTO `users` (username, password) VALUES (?)';
 	bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
