@@ -40,9 +40,10 @@ router.post('/removeinstrument', (req, res) => {
 
 router.get('/getinstruments', (req, res) => {
 	const sql = 'SELECT * FROM `explore` WHERE userid = ? AND pageno = ?';
-	db.query(sql, [req.body.userid, req.body.pageno])
+	db.query(sql, [req.query.userid, req.query.pageno])
 		.then((data) => {
-			res.status(200).send(data[0]);
+			const instruments = data[0].map((instrument) => instrument.instrument);
+			res.status(200).send(instruments);
 		})
 		.catch((err) => {
 			res.status(500).send('error');
