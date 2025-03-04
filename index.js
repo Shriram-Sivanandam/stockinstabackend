@@ -12,13 +12,10 @@ app.use(
 app.use(express.json());
 
 const db = require('./db');
-const employeeController = require('./controllers/employee.controller');
 const usersController = require('./controllers/users.controller');
 const exploreController = require('./controllers/explore.controller');
 
 const PORT = 3000;
-
-app.use('/employees', employeeController);
 
 app.use('/users', usersController);
 
