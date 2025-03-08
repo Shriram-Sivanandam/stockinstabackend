@@ -86,4 +86,27 @@ router.get('/getExplorePages', (req, res) => {
 		});
 });
 
+router.get('/searchInstrument', (req, res) => {
+	const searchParam = '%' + req.query.searchParam + '%';
+	const sql = `SELECT instrument_token, exchange_token, tradingsymbol, name, exchange 
+		 FROM instruments 
+		 WHERE (tradingsymbol LIKE UPPER(?) OR name LIKE UPPER(?)) 
+		 AND COALESCE(name,'') <> ''
+		 ORDER BY
+		 CASE
+			 WHEN tradingsymbol LIKE UPPER(?) THEN 1
+			 WHEN name LIKE UPPER(?) THEN 2
+			 ELSE 3
+		 END,
+		 tradingsymbol ASC`;
+	db.query(sql, [searchParam, searchParam, searchParam, searchParam])
+		.then((data) => {
+			const instruments = data[0];
+			res.status(200).send(instruments);
+		})
+		.catch((err) => {
+			res.status(500).send('error in fetching instruments', err);
+		});
+});
+
 module.exports = router;
