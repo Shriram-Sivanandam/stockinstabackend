@@ -17,8 +17,8 @@ const db = require('../db');
 
 //Routes for instruments in each explore page for particular user
 router.post('/addinstrument', (req, res) => {
-	const sql = 'INSERT INTO `explore` (userid, instrument, pageno) VALUES (?)';
-	const values = [req.body.userid, req.body.instrument, req.body.pageno];
+	const sql = 'INSERT INTO `explore` (userid, tradingsymbol, pageno, exchange) VALUES (?)';
+	const values = [req.body.userid, req.body.tradingsymbol, req.body.pageno, req.body.exchange];
 	db.query(sql, [values])
 		.then(() => {
 			res.status(200).send('Success');
@@ -29,8 +29,8 @@ router.post('/addinstrument', (req, res) => {
 });
 
 router.post('/removeinstrument', (req, res) => {
-	const sql = 'DELETE FROM explore WHERE userid = ? AND instrument = ? AND pageno = ?';
-	db.query(sql, [req.body.userid, req.body.instrument, req.body.pageno])
+	const sql = 'DELETE FROM explore WHERE userid = ? AND tradingsymbol = ? AND pageno = ? AND exchange = ?';
+	db.query(sql, [req.body.userid, req.body.tradingsymbol, req.body.pageno, req.body.exchange])
 		.then(() => {
 			res.status(200).send('Success');
 		})
@@ -40,10 +40,10 @@ router.post('/removeinstrument', (req, res) => {
 });
 
 router.get('/getinstruments', (req, res) => {
-	const sql = 'SELECT instrument FROM `explore` WHERE userid = ? AND pageno = ?';
+	const sql = 'SELECT tradingsymbol, exchange FROM `explore` WHERE userid = ? AND pageno = ?';
 	db.query(sql, [req.query.userid, req.query.pageno])
 		.then((data) => {
-			const instruments = data[0].map((instrument) => instrument.instrument);
+			const instruments = data[0];
 			res.status(200).send(instruments);
 		})
 		.catch((err) => {
