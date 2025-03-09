@@ -88,7 +88,7 @@ router.get('/getExplorePages', (req, res) => {
 
 router.get('/searchInstrument', (req, res) => {
 	const searchParam = '%' + req.query.searchParam + '%';
-	const sql = `SELECT instrument_token, exchange_token, tradingsymbol, name, exchange 
+	const sql = `SELECT DISTINCT instrument_token, exchange_token, tradingsymbol, name, exchange 
 		 FROM instruments 
 		 WHERE (tradingsymbol LIKE UPPER(?) OR name LIKE UPPER(?)) 
 		 AND COALESCE(name,'') <> ''
