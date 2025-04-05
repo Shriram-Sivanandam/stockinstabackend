@@ -49,7 +49,7 @@ router.post('/login', (req, res) => {
 					if (isMatch) {
 						const token = jwt.sign({ email: req.body.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 						res.cookie('token', token, { httpOnly: true });
-						return res.status(200).send('login successful');
+						return res.status(200).json({ id: result[0][0].id });
 					} else {
 						return res.status(401).send('Incorrect password');
 					}
