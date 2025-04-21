@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(
@@ -23,6 +24,8 @@ app.use('/users', usersController);
 app.use('/explore', exploreController);
 
 app.use('/posts', postsController);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 db.query('SELECT 1')
 	.then((data) => {

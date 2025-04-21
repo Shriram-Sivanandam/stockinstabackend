@@ -7,6 +7,8 @@ const fs = require('fs');
 
 const router = express.Router();
 
+const BASE_URL = 'https://0137-110-226-179-180.ngrok-free.app';
+
 router.use(
 	cors({
 		origin: 'http://localhost:3000',
@@ -29,10 +31,7 @@ if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
 
 //Routes for posts
 router.post('/addpost', upload.single('image'), (req, res) => {
-	console.log('asdfasd', req.file);
-
 	const { userid, caption } = req.body;
-	console.log('body', userid, caption);
 	const filePath = req.file.path;
 	if (!userid) {
 		return res.status(400).json({ error: 'UserID required' });
@@ -44,6 +43,34 @@ router.post('/addpost', upload.single('image'), (req, res) => {
 		})
 		.catch((err) => {
 			res.status(500).send('error inserting post', err);
+		});
+});
+
+router.get('/getposts', (req, res) => {
+	const { userid } = req.query;
+	if (!userid) {
+		return res.status(400).json({ error: 'UserID required' });
+	}
+	const sql = `
+		SELECT p.entity_id, p.userid, p.caption, p.image_path, p.created_at, u.username 
+		FROM posts p
+		JOIN users u ON p.userid = u.id
+		WHERE p.userid = ?
+		ORDER BY p.created_at DESC
+	`;
+	db.query(sql, [userid])
+		.then((data) => {
+			const posts = data[0];
+			posts.forEach((post) => {
+				if (post.image_path) {
+					const normalizedPath = post.image_path.replace(/\\/g, '/');
+					post.image_path = `${BASE_URL}/${normalizedPath}`;
+				}
+			});
+			res.status(200).json({ posts: posts });
+		})
+		.catch((err) => {
+			res.status(500).json({ error: 'error in fetching posts', err });
 		});
 });
 
