@@ -7,7 +7,7 @@ const fs = require('fs');
 
 const router = express.Router();
 
-const BASE_URL = 'https://0137-110-226-179-180.ngrok-free.app';
+const BASE_URL = 'https://2e00-110-226-179-180.ngrok-free.app';
 
 router.use(
 	cors({
@@ -52,20 +52,34 @@ router.get('/getposts', (req, res) => {
 		return res.status(400).json({ error: 'UserID required' });
 	}
 	const sql = `
-		SELECT p.entity_id, p.userid, p.caption, p.image_path, p.created_at, u.username 
-		FROM posts p
-		JOIN users u ON p.userid = u.id
-		WHERE p.userid = ?
-		ORDER BY p.created_at DESC
+		SELECT 
+			p.entity_id, 
+			p.userid, 
+			p.caption, 
+			REPLACE(p.image_path, '\\\\', '/') AS image_path,
+			p.created_at, 
+			u.username, 
+			REPLACE(u.dp_path, '\\\\', '/') AS dp_path,
+			COALESCE(like_counts.likes, 0) AS likes,
+			CASE WHEN ul.userid IS NOT NULL THEN true ELSE false END AS isLiked,
+			CASE WHEN ul.userid IS NOT NULL THEN true ELSE false END AS isSaved
+		FROM user_db.posts p
+		JOIN user_db.users u ON p.userid = u.id
+		LEFT JOIN (
+			SELECT entity_id, COUNT(*) AS likes
+			FROM user_db.likes
+			GROUP BY entity_id
+		) like_counts ON like_counts.entity_id = p.entity_id
+		LEFT JOIN user_db.likes ul ON ul.entity_id = p.entity_id AND ul.userid = (?)
+		WHERE p.userid = (?)
+		ORDER BY p.created_at DESC;
 	`;
-	db.query(sql, [userid])
+	db.query(sql, [userid, userid])
 		.then((data) => {
 			const posts = data[0];
 			posts.forEach((post) => {
-				if (post.image_path) {
-					const normalizedPath = post.image_path.replace(/\\/g, '/');
-					post.image_path = `${BASE_URL}/${normalizedPath}`;
-				}
+				post.image_path = BASE_URL + '/' + post.image_path;
+				//post.dp_path = BASE_URL + '/' + post.dp_path;
 			});
 			res.status(200).json({ posts: posts });
 		})
