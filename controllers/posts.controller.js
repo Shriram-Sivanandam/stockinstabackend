@@ -145,4 +145,40 @@ router.get('/getcomments', (req, res) => {
 		});
 });
 
+// Routes for likes
+
+router.post('/addlike', (req, res) => {
+	const { entity_id, userid } = req.body;
+	if (!entity_id || !userid) {
+		return res.status(400).json({ error: 'PostID and UserID required' });
+	}
+	const sql = 'INSERT INTO `likes` (entity_id, userid) VALUES (?, ?)';
+	db.query(sql, [entity_id, userid])
+		.then(() => {
+			return res.status(200).json({ message: 'Like added successfully' });
+		})
+		.catch((err) => {
+			return res.status(500).json({ message: 'error inserting like', err });
+		});
+});
+
+router.post('/removelike', (req, res) => {
+	const { entity_id, userid } = req.body;
+	if (!entity_id || !userid) {
+		return res.status(400).json({ error: 'PostID and UserID required' });
+	}
+	const sql = 'DELETE FROM `likes` WHERE entity_id = ? AND userid = ?';
+	db.query(sql, [entity_id, userid])
+		.then((result) => {
+			if (result.affectedRows === 0) {
+				return res.status(404).json({ message: 'Like not found or already deleted' });
+			}
+
+			return res.status(200).json({ message: 'Like deleted successfully' });
+		})
+		.catch((err) => {
+			return res.status(500).json({ message: 'error deleting like', err });
+		});
+});
+
 module.exports = router;
