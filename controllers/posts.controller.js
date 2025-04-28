@@ -4,10 +4,9 @@ const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
 const fs = require('fs');
+const BASE_URL = process.env.BASE_URL;
 
 const router = express.Router();
-
-const BASE_URL = 'https://2e00-110-226-179-180.ngrok-free.app';
 
 router.use(
 	cors({
