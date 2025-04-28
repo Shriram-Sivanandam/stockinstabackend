@@ -128,7 +128,7 @@ router.get('/getcomments', (req, res) => {
 		return res.status(400).json({ error: 'PostID required' });
 	}
 	const sql = `
-        SELECT c.comment_id, c.entity_id, c.userid, c.comment, c.created_at, u.username
+        SELECT c.comment_id, c.entity_id, c.userid, c.comment, c.created_at, u.username, u.dp_path
         FROM comments c
         JOIN users u ON c.userid = u.id
         WHERE c.entity_id = ?
