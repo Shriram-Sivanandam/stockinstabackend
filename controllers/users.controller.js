@@ -63,4 +63,39 @@ router.post('/login', (req, res) => {
 		});
 });
 
+router.post('/follow', (req, res) => {
+	const { followerid, followingid } = req.body;
+	if (!followerid || !followingid) {
+		return res.status(400).json({ error: 'FollowerID and FollowingID required' });
+	}
+	if (followerid === followingid) {
+		return res.status(400).json({
+			error: 'A user cannot follow themselves.',
+		});
+	}
+	const sql = 'INSERT IGNORE INTO `follows` (followerid, followingid) VALUES (?, ?)';
+	db.query(sql, [followerid, followingid])
+		.then(() => {
+			res.status(200).json({ message: 'Unfollow successful.' });
+		})
+		.catch((err) => {
+			res.status(500).send('error inserting follow', err);
+		});
+});
+
+router.post('/unfollow', (req, res) => {
+	const { followerid, followingid } = req.body;
+	if (!followerid || !followingid) {
+		return res.status(400).json({ error: 'FollowerID and FollowingID required' });
+	}
+	const sql = 'DELETE FROM `follows` WHERE followerid = ? AND followingid = ?';
+	db.query(sql, [followerid, followingid])
+		.then(() => {
+			res.status(200).json({ message: 'Unfollow successful.' });
+		})
+		.catch((err) => {
+			res.status(500).send('error deleting follow', err);
+		});
+});
+
 module.exports = router;
