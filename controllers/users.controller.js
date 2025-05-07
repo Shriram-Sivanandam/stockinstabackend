@@ -63,6 +63,34 @@ router.post('/login', (req, res) => {
 		});
 });
 
+router.get('/searchUser', (req, res) => {
+	const searchParam = '%' + req.query.searchParam + '%';
+	if (!searchParam || typeof searchParam !== 'string') {
+		return res.status(400).json({ error: 'Missing or invalid searchParam.' });
+	}
+	const sql = `SELECT username, dp_path, id 
+		 FROM users 
+		 WHERE (LOWER(username) LIKE LOWER(?) OR LOWER(emailid) LIKE LOWER(?)) 
+		 AND COALESCE(username,'') <> ''
+		 ORDER BY
+		 CASE
+			WHEN LOWER(username) = LOWER(?) THEN 1
+			WHEN LOWER(username) LIKE LOWER(?) THEN 2
+			WHEN LOWER(emailid) = LOWER(?) THEN 3
+			WHEN LOWER(emailid) LIKE LOWER(?) THEN 4
+			ELSE 5
+		 END
+		 LIMIT 10;`;
+	db.query(sql, [searchParam, searchParam, searchParam, searchParam, searchParam, searchParam])
+		.then((data) => {
+			const users = data[0];
+			res.status(200).send(users);
+		})
+		.catch((err) => {
+			res.status(500).send('error in fetching users', err);
+		});
+});
+
 router.post('/follow', (req, res) => {
 	const { followerid, followingid } = req.body;
 	if (!followerid || !followingid) {
