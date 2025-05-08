@@ -126,4 +126,41 @@ router.post('/unfollow', (req, res) => {
 		});
 });
 
+router.get('/getProfile', (req, res) => {
+	const { userid, currentUserid } = req.query;
+	console.log('currentUserid', currentUserid, 'asdf', userid);
+	if (!userid) {
+		return res.status(400).json({ error: 'UserID required' });
+	}
+	const sql = `
+		SELECT 
+			u.username, 
+			u.dp_path,
+			(SELECT COUNT(*) FROM follows WHERE followingid = u.id) AS followers,
+			(SELECT COUNT(*) FROM follows WHERE followerid = u.id) AS following,
+			(SELECT COUNT(*) FROM posts WHERE userid = u.id) AS posts,
+			EXISTS (
+				SELECT 1
+				FROM follows f 
+				WHERE f.followerid = ? AND f.followingid = u.id
+			) AS isFollowing
+		FROM users u
+		WHERE u.id = ?;
+	`;
+	db.query(sql, [currentUserid, userid])
+		.then((data) => {
+			const user = data[0][0];
+			if (!user) {
+				return res.status(404).json({ error: 'User not found' });
+			}
+			user.dp_path = process.env.BASE_URL + '/' + user.dp_path;
+			user.isFollowing = Boolean(user.isFollowing);
+			//user.isMe = String(currentUserid) === String(userid);
+			res.status(200).json(user);
+		})
+		.catch((err) => {
+			res.status(500).json({ error: 'error in fetching profile' });
+		});
+});
+
 module.exports = router;
