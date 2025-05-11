@@ -128,7 +128,6 @@ router.post('/unfollow', (req, res) => {
 
 router.get('/getProfile', (req, res) => {
 	const { userid, currentUserid } = req.query;
-	console.log('currentUserid', currentUserid, 'asdf', userid);
 	if (!userid) {
 		return res.status(400).json({ error: 'UserID required' });
 	}
@@ -153,9 +152,9 @@ router.get('/getProfile', (req, res) => {
 			if (!user) {
 				return res.status(404).json({ error: 'User not found' });
 			}
-			user.dp_path = process.env.BASE_URL + '/' + user.dp_path;
+			//user.dp_path = process.env.BASE_URL + '/' + user.dp_path;
 			user.isFollowing = Boolean(user.isFollowing);
-			//user.isMe = String(currentUserid) === String(userid);
+			user.isMe = String(currentUserid) === String(userid);
 			res.status(200).json(user);
 		})
 		.catch((err) => {
