@@ -46,7 +46,7 @@ router.post('/addpost', upload.single('image'), (req, res) => {
 });
 
 router.get('/getposts', (req, res) => {
-	const { userid } = req.query;
+	const { userid, currentUserid } = req.query;
 	if (!userid) {
 		return res.status(400).json({ error: 'UserID required' });
 	}
@@ -71,6 +71,51 @@ router.get('/getposts', (req, res) => {
 		) like_counts ON like_counts.entity_id = p.entity_id
 		LEFT JOIN user_db.likes ul ON ul.entity_id = p.entity_id AND ul.userid = (?)
 		WHERE p.userid = (?)
+		ORDER BY p.created_at DESC;
+	`;
+	db.query(sql, [currentUserid, userid])
+		.then((data) => {
+			const posts = data[0];
+			posts.forEach((post) => {
+				post.image_path = BASE_URL + '/' + post.image_path;
+				//post.dp_path = BASE_URL + '/' + post.dp_path;
+			});
+			res.status(200).json({ posts: posts });
+		})
+		.catch((err) => {
+			res.status(500).json({ error: 'error in fetching posts', err });
+		});
+});
+
+router.get('/getFeed', (req, res) => {
+	const { userid } = req.query;
+	if (!userid) {
+		return res.status(400).json({ error: 'UserID required' });
+	}
+	const sql = `
+		SELECT 
+			p.entity_id, 
+			p.userid, 
+			p.caption, 
+			REPLACE(p.image_path, '\\\\', '/') AS image_path,
+			p.created_at, 
+			u.username, 
+			REPLACE(u.dp_path, '\\\\', '/') AS dp_path,
+			COALESCE(like_counts.likes, 0) AS likes,
+			CASE WHEN ul.userid IS NOT NULL THEN true ELSE false END AS isLiked,
+			CASE WHEN ul.userid IS NOT NULL THEN true ELSE false END AS isSaved
+		FROM user_db.posts p
+		JOIN user_db.users u ON p.userid = u.id
+		LEFT JOIN (
+			SELECT entity_id, COUNT(*) AS likes
+			FROM user_db.likes
+			GROUP BY entity_id
+		) like_counts ON like_counts.entity_id = p.entity_id
+		LEFT JOIN user_db.likes ul ON ul.entity_id = p.entity_id AND ul.userid = (?)
+		WHERE p.userid in (
+			SELECT followingid 
+			FROM user_db.follows
+			WHERE followerid = (?))
 		ORDER BY p.created_at DESC;
 	`;
 	db.query(sql, [userid, userid])
