@@ -1,9 +1,11 @@
+require('dotenv').config();
+
 const mysql = require('mysql2/promise');
 
 const mysqlPool = mysql.createPool({
-	host: 'localhost',
-	user: 'root',
-	password: '12345',
+	host: 'aws-stockinsta.cxuikmck8hz8.eu-north-1.rds.amazonaws.com',
+	user: 'admin',
+	password: process.env.DB_PASSWORD,
 	database: 'user_db',
 });
 

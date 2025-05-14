@@ -22,12 +22,12 @@ const saltRounds = 10;
 const db = require('../db');
 
 router.post('/registerUser', (req, res) => {
-	const sql = 'INSERT INTO `users` (username, password) VALUES (?)';
+	const sql = 'INSERT INTO users (emailid, password, username) VALUES (?)';
 	bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
 		if (err) {
 			return res.status(500).send('error in hashing password');
 		}
-		const values = [req.body.email, hash];
+		const values = [req.body.email, hash, req.body.username];
 		db.query(sql, [values])
 			.then((data) => {
 				return res.status(200).send('Success');
@@ -39,7 +39,7 @@ router.post('/registerUser', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-	const sql = 'SELECT * FROM users WHERE username = ?';
+	const sql = 'SELECT * FROM users WHERE emailid = ?';
 
 	db.query(sql, [req.body.email])
 		.then((result) => {
