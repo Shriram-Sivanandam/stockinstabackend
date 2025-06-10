@@ -77,7 +77,7 @@ router.get('/getposts', (req, res) => {
 		.then((data) => {
 			const posts = data[0];
 			posts.forEach((post) => {
-				post.image_path = BASE_URL + '/' + post.image_path;
+				post.image_path = (BASE_URL + '/' + post.image_path.trim()).trim();
 				//post.dp_path = BASE_URL + '/' + post.dp_path;
 			});
 			res.status(200).json({ posts: posts });
@@ -122,7 +122,7 @@ router.get('/getFeed', (req, res) => {
 		.then((data) => {
 			const posts = data[0];
 			posts.forEach((post) => {
-				post.image_path = BASE_URL + '/' + post.image_path;
+				post.image_path = (BASE_URL + '/' + post.image_path.trim()).trim();
 				//post.dp_path = BASE_URL + '/' + post.dp_path;
 			});
 			res.status(200).json({ posts: posts });
