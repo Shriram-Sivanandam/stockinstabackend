@@ -12,7 +12,7 @@ const mysqlPool = mysql.createPool({
 mysqlPool.on('connection', function (connection) {
 	console.log('DB Connection established');
 
-	connection.on('error', function (err) {
+	connection.on('errorrrrr', function (err) {
 		console.error(new Date(), 'MySQL error', err.code);
 	});
 	connection.on('close', function (err) {

@@ -33,3 +33,17 @@ db.query('SELECT 1')
 		app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 	})
 	.catch((err) => console.log('error', err));
+
+
+// const { sendOTPEmail } = require('./utilities/emailSender');
+
+// const main = async () => {
+//   const recipientEmail = 'ssshriram4@gmail.com';
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+
+//   console.log(`Attempting to send OTP ${otp} to ${recipientEmail}`);
+
+//   const result = await sendOTPEmail(recipientEmail, otp);
+// };
+
+// main();
