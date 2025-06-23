@@ -38,6 +38,52 @@ router.post('/registerUser', (req, res) => {
 	});
 });
 
+router.post('/sendOTP', (req, res) => {
+	const { email } = req.body;
+	if (!email) {
+		return res.status(400).json({ error: 'Email is mandatory.' });
+	}
+
+	const otp = Math.floor(100000 + Math.random() * 900000).toString();
+	const expires_at = new Date(Date.now() + 10 * 60 * 1000);
+	const sql = 'INSERT INTO otp_verifications (identifier, otp, expires_at) VALUES (?, ?, ?)';
+
+	const values = [email, otp, expires_at];
+	db.query(sql, values)
+		.then((data) => {
+			return res.status(200).send({ message: 'OTP creation successful' });
+		})
+		.catch((err) => {
+			return res.status(500).send({ error: 'error occured in inserting OTP' + err });
+		});
+});
+
+router.post('/verifyOTP', (req, res) => {
+	const { email, otp } = req.body;
+
+	if (!email || !otp) {
+		return res.status(400).json({ error: 'Email and OTP are mandatory.' });
+	}
+
+	const sql =
+		'SELECT * FROM otp_verifications WHERE identifier = ? AND otp = ? AND verified = 0 AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1';
+
+	db.query(sql, [email, otp]).then((result) => {
+		if (result.length > 0) {
+			const updatesql = 'UPDATE otp_verifications SET verified = 1 WHERE identifier = ? and otp = ?';
+			db.query(updatesql, [email, otp])
+				.then(() => {
+					return res.status(200).json({ message: 'OTP verified successfully.' });
+				})
+				.catch((err) => {
+					return res.status(500).json({ error: 'Error updating OTP verification status.' });
+				});
+		} else {
+			return res.status(400).json({ error: 'Invalid or expired OTP.' });
+		}
+	});
+});
+
 router.post('/login', (req, res) => {
 	const sql = 'SELECT * FROM users WHERE emailid = ?';
 
