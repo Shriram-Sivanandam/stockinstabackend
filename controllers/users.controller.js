@@ -66,7 +66,7 @@ router.post('/verifyOTP', (req, res) => {
 	}
 
 	const sql =
-		'SELECT * FROM otp_verifications WHERE identifier = ? AND otp = ? AND verified = 0 AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1';
+		'SELECT * FROM otp_verifications WHERE identifier = ? AND otp = ? AND verified = 0 AND expires_at > NOW()';
 
 	db.query(sql, [email, otp]).then((result) => {
 		if (result.length > 0) {
