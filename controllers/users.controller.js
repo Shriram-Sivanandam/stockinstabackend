@@ -23,6 +23,7 @@ const db = require('../db');
 
 router.post('/registerUser', (req, res) => {
 	const sql = 'INSERT INTO users (emailid, password, username) VALUES (?)';
+	console.log(req.body);
 	bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
 		if (err) {
 			return res.status(500).send('error in hashing password');
@@ -30,7 +31,11 @@ router.post('/registerUser', (req, res) => {
 		const values = [req.body.email, hash, req.body.username];
 		db.query(sql, [values])
 			.then((data) => {
-				return res.status(200).send('Success');
+				const token = jwt.sign({ email: req.body.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+				res.cookie('token', token, { httpOnly: true });
+				console.log('helloooo', data[0].insertId);
+				return res.status(200).json({ id: data[0].insertId });
+				//return res.status(200).send('Success');
 			})
 			.catch((err) => {
 				return res.status(500).send('error in inserting user');
