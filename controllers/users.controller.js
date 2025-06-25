@@ -3,6 +3,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const { sendOTPEmail } = require('../utilities/emailSender');
 require('dotenv').config();
 
 const router = express.Router();
@@ -20,6 +21,11 @@ router.use(cookieParser());
 const saltRounds = 10;
 
 const db = require('../db');
+
+const sendOTPMail = async (otp) => {
+	const recipientEmail = 'ssshriram4@gmail.com';
+	const result = await sendOTPEmail(recipientEmail, otp);
+};
 
 router.post('/registerUser', (req, res) => {
 	const sql = 'INSERT INTO users (emailid, password, username) VALUES (?)';
@@ -56,6 +62,7 @@ router.post('/sendOTP', (req, res) => {
 	const values = [email, otp, expires_at];
 	db.query(sql, values)
 		.then((data) => {
+			sendOTPMail(otp);
 			return res.status(200).send({ message: 'OTP creation successful' });
 		})
 		.catch((err) => {
@@ -65,7 +72,6 @@ router.post('/sendOTP', (req, res) => {
 
 router.post('/verifyOTP', (req, res) => {
 	const { email, otp } = req.body;
-
 	if (!email || !otp) {
 		return res.status(400).json({ error: 'Email and OTP are mandatory.' });
 	}
@@ -74,7 +80,7 @@ router.post('/verifyOTP', (req, res) => {
 		'SELECT * FROM otp_verifications WHERE identifier = ? AND otp = ? AND verified = 0 AND expires_at > NOW()';
 
 	db.query(sql, [email, otp]).then((result) => {
-		if (result.length > 0) {
+		if (result[0].length > 0) {
 			const updatesql = 'UPDATE otp_verifications SET verified = 1 WHERE identifier = ? and otp = ?';
 			db.query(updatesql, [email, otp])
 				.then(() => {
